@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roll The Dice</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .dice-selector {
+            margin: 20px;
+        }
+        .history {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Roll The Dice</h1>
+    
+
+    <div class="dice-selector">
+        <label for="dice">Escolha um dado:</label>
+        <select id="dice">
+            <option value="6">Dado de 6 lados</option>
+            <option value="4">Dado de 4 lados</option>
+            <option value="20">Dado de 20 lados</option>
+        </select>
+        <button onclick="rollDice()">Lançar Dado</button>
+    </div>
+
+    <div id="result" style="display: none;">
+        <h2>Resultado:</h2>
+        <p id="roll-result"></p>
+    </div>
+
+    <div class="history">
+        <h2>Histórico de Rolagem:</h2>
+        <ul id="roll-history"></ul>
+    </div>
+
+    <script>
+        function rollDice() {
+            const selectedDice = document.getElementById("dice").value;
+
+            fetch(`/roll/${selectedDice}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById("result");
+                const resultMessage = document.getElementById("roll-result");
+
+                resultMessage.textContent = `Você rolou um ${selectedDice}-lados e obteve o resultado: ${data.result}`;
+                resultDiv.style.display = "block";
+
+                updateRollHistory();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+        function updateRollHistory() {
+            fetch('/history')
+                .then(response => response.json())
+                .then(data => {
+                    const historyList = document.getElementById("roll-history");
+                    historyList.innerHTML = "";
+
+                    data.history.forEach(entry => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `Rolou um dado de ${entry.dice_type}-lados e obteve ${entry.result}`;
+                        historyList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar o histórico:', error);
+                });
+        }
+        
+        updateRollHistory();
+    </script>
+</body>
+</html>
